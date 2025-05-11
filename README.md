@@ -46,6 +46,20 @@
   
 ```bash
 # 1. docker 실행
+## redis
+docker run -d --name redis \
+  -p 6379:6379 \
+  redis:7
+
+## kafka
+docker run -d --name kafka \
+  -p 9092:9092 \
+  -e KAFKA_BROKER_ID=1 \
+  -e KAFKA_CFG_LISTENERS=PLAINTEXT://:9092 \
+  -e KAFKA_CFG_ADVERTISED_LISTENERS=PLAINTEXT://localhost:9092 \
+  -e KAFKA_CFG_ZOOKEEPER_CONNECT=localhost:2181 \
+  -e ALLOW_PLAINTEXT_LISTENER=yes \
+  bitnami/kafka:latest
 
 # 2. 빌드
 ./gradlew clean build 실행
