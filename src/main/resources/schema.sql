@@ -1,0 +1,4 @@
+CREATE TABLE IF NOT EXISTS keyword_count (
+    keyword VARCHAR(255) NOT NULL PRIMARY KEY,
+    count BIGINT NOT NULL
+);

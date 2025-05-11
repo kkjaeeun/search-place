@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD MAPPER 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.search.app.mapper.SearchKeywordMapper">
+    <select id="selectKeywordCount" resultType="Integer">
+        SELECT
+            count
+        FROM
+            keyword_count
+        WHERE
+            keyword = #{keyword}
+    </select>
+
+    <update id="incrementKeywordCount">
+        UPDATE
+            keyword_count
+        SET
+            count = count + 1
+        WHERE
+            keyword = #{keyword}
+    </update>
+
+    <insert id="insertKeywordCount">
+        INSERT INTO keyword_count (
+            keyword,
+            count
+        ) VALUES (
+            #{keyword},
+            1
+        )
+    </insert>
+
+    <select id="selectTopKeywordList" resultType="com.search.app.dto.KeywordCountDto">
+        SELECT
+            keyword,
+            count
+        FROM
+            keyword_count
+        ORDER BY count DESC
+        LIMIT 10
+    </select>
+</mapper>
