@@ -24,4 +24,9 @@ public class SearchController {
     public ResponseObject getTopKeywordList(@RequestParam(value = "size", required = false, defaultValue = "10") Integer size) {
         return searchService.getTopKeywordList(size);
     }
+
+    @GetMapping("/keyword-realtime")
+    public ResponseObject getTopKeywordRealtime(@RequestParam(value = "size", required = false, defaultValue = "10") Integer size) {
+        return searchService.getTopKeywordRealtime(size);
+    }
 }

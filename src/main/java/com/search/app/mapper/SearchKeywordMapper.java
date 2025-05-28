@@ -15,4 +15,10 @@ public interface SearchKeywordMapper {
     void insertKeywordCount(@Param("keyword") String keyword);
 
     List<KeywordCountDto> selectTopKeywordList(@Param("size") int size);
+
+    List<KeywordCountDto> selectKeywordList();
+
+    void updateKeywordCount(@Param("keyword") String keyword, @Param("count") int count);
+
+    void insertKeywordWithCount(@Param("keyword") String keyword, @Param("count") int count);
 }

@@ -18,7 +18,7 @@ public class KakaoPlaceSearchClient {
     private String placeSearchUri;
 
     public List<PlaceDto> searchPlace(String keyword, int size) {
-        List<PlaceDto> kakaoPlaceResponse = kakaoWebClient.get()
+        return kakaoWebClient.get()
                 .uri(uriBuilder -> uriBuilder
                         .path(placeSearchUri)
                         .queryParam("query", keyword)
@@ -29,6 +29,5 @@ public class KakaoPlaceSearchClient {
                 .map(response -> response.toPlaces())
                 .block();
 
-        return kakaoPlaceResponse;
     }
 }

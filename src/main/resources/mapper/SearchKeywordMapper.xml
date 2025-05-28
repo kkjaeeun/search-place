@@ -38,6 +38,33 @@
         FROM
             keyword_count
         ORDER BY count DESC
-        LIMIT 10
+        LIMIT #{size}
     </select>
+
+    <select id="selectKeywordList" resultType="com.search.app.dto.KeywordCountDto">
+        SELECT
+            keyword,
+            count
+        FROM
+            keyword_count
+    </select>
+
+    <update id="updateKeywordCount">
+        UPDATE
+            keyword_count
+        SET
+            count = #{count}
+        WHERE
+            keyword = #{keyword}
+    </update>
+
+    <insert id="insertKeywordWithCount">
+        INSERT INTO keyword_count (
+            keyword,
+            count
+        ) VALUES (
+             #{keyword},
+             #{count}
+         )
+    </insert>
 </mapper>

@@ -8,4 +8,9 @@ import lombok.Setter;
 public class KeywordCountDto {
     private String keyword;
     private int count;
+
+    public KeywordCountDto(String keyword, int count) {
+        this.keyword = keyword;
+        this.count = count;
+    }
 }

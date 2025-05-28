@@ -3,6 +3,7 @@ package com.search.app.service;
 
 import com.search.app.client.KakaoPlaceSearchClient;
 import com.search.app.client.NaverPlaceSearchClient;
+import com.search.app.component.KeywordRedisComponent;
 import com.search.app.dto.KeywordCountDto;
 import com.search.app.dto.PlaceDto;
 
@@ -10,9 +11,12 @@ import com.search.app.dto.PlaceResponse;
 import com.search.app.mapper.SearchKeywordMapper;
 import com.search.common.response.ResponseObject;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.redis.RedisConnectionFailureException;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.stereotype.Service;
+import org.springframework.web.reactive.function.client.WebClientResponseException;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -21,6 +25,7 @@ import java.util.Map;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
+@Slf4j
 @RequiredArgsConstructor
 @Service
 public class SearchService {
@@ -29,6 +34,7 @@ public class SearchService {
     private final SearchKeywordMapper searchKeywordMapper;
     private final KakaoPlaceSearchClient kakaoPlaceSearchClient;
     private final NaverPlaceSearchClient naverPlaceSearchClient;
+    private final KeywordRedisComponent keywordService;
 
     private final String REDIS_KEY_PREFIX = "search:place:";
     private final int MAX_SEARCH_SIZE = 5;
@@ -48,6 +54,8 @@ public class SearchService {
         String keyword = originKeyword.replaceAll(" ", "");
 
         try {
+            // redis 키워드 score update
+            keywordService.addKeywordCount(keyword);
             // 키워드별 검색 횟수 update (Kafka 전송)
             kafkaTemplate.send("keyword-count", keyword);
 
@@ -69,7 +77,14 @@ public class SearchService {
 
             response.setPlaces(placeList);
             return new ResponseObject(response);
+        } catch (RedisConnectionFailureException e) {
+            log.error("Redis Connection failed : {}", e.getMessage());
+            return new ResponseObject("Error", e.getMessage());
+        } catch (WebClientResponseException e) {
+            log.error("External API call failed : {}", e.getMessage());
+            return new ResponseObject("Error", e.getMessage());
         } catch (Exception e) {
+            log.error("Error : {}", e.getMessage());
             return new ResponseObject("Error", e.getMessage());
         }
     }
@@ -120,14 +135,14 @@ public class SearchService {
     }
 
     /**
-     * 검색 키워드 목록 조회
+     * 검색 키워드 순위 조회
      *
      * @param size
      * @return
      */
     public ResponseObject getTopKeywordList(int size) {
         List<KeywordCountDto> keywordCountList = new ArrayList<>();
-        String redisKey = "topKeyword";
+        String redisKey = new StringBuilder().append("topKeyword-").append(size).append(":").toString();
         // redis 조회, 없을경우 db 조회
         keywordCountList = (List<KeywordCountDto>) redisTemplate.opsForValue().get(redisKey);
         if (keywordCountList == null) {
@@ -137,6 +152,16 @@ public class SearchService {
         }
 
         return new ResponseObject(keywordCountList);
+    }
+
+    /**
+     * 검색 키워드 순위 Redis Sorted Set 이용하여 조회
+     *
+     * @param size
+     * @return
+     */
+    public ResponseObject getTopKeywordRealtime(Integer size) {
+        return new ResponseObject(keywordService.getTopKeywordList(size));
     }
 }
 
